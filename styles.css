@@ -13,4 +13,11 @@ button:focus-visible { outline: 3px solid #f0b744; outline-offset: 3px; }
 .status { color: #355c4b; font-weight: 650; }
 .note { margin-top: 1rem; padding: 1rem; border-left: 4px solid #e0a535; border-radius: 8px; background: #fff8e8; line-height: 1.55; }
 footer { margin-top: 2rem; color: #64756d; font-size: .85rem; }
+label { display: block; margin: .75rem 0 .25rem; font-weight: 700; }
+input { display: block; width: 100%; min-height: 46px; padding: .7rem .8rem; border: 1px solid #b9c9bd; border-radius: 10px; color: #183129; background: #fff; font: inherit; }
+input:focus-visible { outline: 3px solid #f0b744; outline-offset: 2px; }
+.button-row { display: flex; flex-wrap: wrap; gap: .65rem; margin-top: .35rem; }
+.button-row button { margin-top: .2rem; }
+button.secondary { background: #e7eee9; color: #183129; }
+.small-note { color: #64756d; font-size: .88rem; }
 @media (prefers-reduced-motion: no-preference) { .card { animation: appear .35s ease-out both; } @keyframes appear { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } } }
