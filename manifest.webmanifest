@@ -1,0 +1,10 @@
+{
+  "name": "Workout Planner Notification Test",
+  "short_name": "Workout Test",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f4f5f1",
+  "theme_color": "#10231d",
+  "description": "PWA notification feasibility test for a student project"
+}
