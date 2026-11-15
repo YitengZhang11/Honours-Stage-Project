@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#10231d">
+  <title>PWA Notification Test</title>
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <main class="shell">
+    <p class="eyebrow">RK-26-1235 · P1 feasibility check</p>
+    <h1>PWA notification test</h1>
+    <p class="intro">A small test page for checking installation and notification permission on an iPhone. It does not store workout or personal data.</p>
+
+    <section class="card" aria-labelledby="install-title">
+      <h2 id="install-title">1. Install this PWA</h2>
+      <p>Open this page in Safari on your iPhone, tap Share, then choose Add to Home Screen. Launch the app from its Home Screen icon.</p>
+    </section>
+
+    <section class="card" aria-labelledby="permission-title">
+      <h2 id="permission-title">2. Check notification permission</h2>
+      <p>Tap the button below from the Home Screen app. Record whether iOS shows a permission prompt and what status is returned.</p>
+      <button id="permission-button" type="button">Request notification permission</button>
+      <p id="permission-status" class="status" role="status" aria-live="polite">Permission has not been checked.</p>
+    </section>
+
+    <section class="card" aria-labelledby="push-title">
+      <h2 id="push-title">3. Background Web Push</h2>
+      <p>Permission alone does not test a scheduled reminder. A push sender server must be connected before background or closed-app delivery can be tested.</p>
+      <p class="status">Push sender: not configured</p>
+    </section>
+
+    <aside class="note"><strong>Important:</strong> iPhone PWA Web Push is server-delivered. Do not enter real workout or health information in this test.</aside>
+    <footer>Test only · No health advice · No data collection</footer>
+  </main>
+  <script src="./app.js" defer></script>
+</body>
+</html>
