@@ -12,7 +12,7 @@
   <main class="shell">
     <p class="eyebrow">RK-26-1235 · P1 feasibility check</p>
     <h1>PWA notification test</h1>
-    <p class="intro">A small test page for checking installation and notification permission on an iPhone. It does not store workout or personal data.</p>
+    <p class="intro">A small test page for checking installation and notification delivery on an iPhone. It does not store workout or personal data.</p>
 
     <section class="card" aria-labelledby="install-title">
       <h2 id="install-title">1. Install this PWA</h2>
@@ -21,19 +21,28 @@
 
     <section class="card" aria-labelledby="permission-title">
       <h2 id="permission-title">2. Check notification permission</h2>
-      <p>Tap the button below from the Home Screen app. Record whether iOS shows a permission prompt and what status is returned.</p>
+      <p>Use the Home Screen app to request permission. Current permission:</p>
       <button id="permission-button" type="button">Request notification permission</button>
       <p id="permission-status" class="status" role="status" aria-live="polite">Permission has not been checked.</p>
     </section>
 
     <section class="card" aria-labelledby="push-title">
-      <h2 id="push-title">3. Background Web Push</h2>
-      <p>Permission alone does not test a scheduled reminder. A push sender server must be connected before background or closed-app delivery can be tested.</p>
-      <p class="status">Push sender: not configured</p>
+      <h2 id="push-title">3. Subscribe and send a real test push</h2>
+      <p>Enter the HTTPS address of the separately hosted test server and its private test token. The token is used for this browser session only.</p>
+      <label for="server-url">Push server URL</label>
+      <input id="server-url" type="url" inputmode="url" placeholder="https://your-test-server.example" autocomplete="url">
+      <label for="test-token">Private test token</label>
+      <input id="test-token" type="password" autocomplete="off" placeholder="Enter the server's PUSH_TEST_TOKEN">
+      <div class="button-row">
+        <button id="subscribe-button" type="button">Subscribe this device</button>
+        <button id="send-test-button" type="button" class="secondary">Send test push</button>
+      </div>
+      <p id="push-status" class="status" role="status" aria-live="polite">Push server not connected.</p>
+      <p class="small-note">The test server template stores subscriptions in memory only; they are cleared when it restarts. Never enter real workout or health information.</p>
     </section>
 
-    <aside class="note"><strong>Important:</strong> iPhone PWA Web Push is server-delivered. Do not enter real workout or health information in this test.</aside>
-    <footer>Test only · No health advice · No data collection</footer>
+    <aside class="note"><strong>Important:</strong> Background delivery requires a running HTTPS push server and a Home Screen app with notification permission enabled.</aside>
+    <footer>Test only · No health advice · No workout data collection</footer>
   </main>
   <script src="./app.js" defer></script>
 </body>
