@@ -3,47 +3,45 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#10231d">
-  <title>PWA Notification Test</title>
+  <meta name="theme-color" content="#123b32">
+  <meta name="description" content="Plan workouts, record sessions and follow fitness progress in one place.">
+  <title>FitPlan | Personal Fitness Planner</title>
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
-  <main class="shell">
-    <p class="eyebrow">RK-26-1235 · P1 feasibility check</p>
-    <h1>PWA notification test</h1>
-    <p class="intro">A small test page for checking installation and notification delivery on an iPhone. It does not store workout or personal data.</p>
-
-    <section class="card" aria-labelledby="install-title">
-      <h2 id="install-title">1. Install this PWA</h2>
-      <p>Open this page in Safari on your iPhone, tap Share, then choose Add to Home Screen. Launch the app from its Home Screen icon.</p>
-    </section>
-
-    <section class="card" aria-labelledby="permission-title">
-      <h2 id="permission-title">2. Check notification permission</h2>
-      <p>Use the Home Screen app to request permission. Current permission:</p>
-      <button id="permission-button" type="button">Request notification permission</button>
-      <p id="permission-status" class="status" role="status" aria-live="polite">Permission has not been checked.</p>
-    </section>
-
-    <section class="card" aria-labelledby="push-title">
-      <h2 id="push-title">3. Subscribe and send a real test push</h2>
-      <p>Enter the HTTPS address of the separately hosted test server and its private test token. The token is used for this browser session only.</p>
-      <label for="server-url">Push server URL</label>
-      <input id="server-url" type="url" inputmode="url" placeholder="https://your-test-server.example" autocomplete="url">
-      <label for="test-token">Private test token</label>
-      <input id="test-token" type="password" autocomplete="off" placeholder="Enter the server's PUSH_TEST_TOKEN">
-      <div class="button-row">
-        <button id="subscribe-button" type="button">Subscribe this device</button>
-        <button id="send-test-button" type="button" class="secondary">Send test push</button>
+  <header class="topbar">
+    <a class="brand" href="#home" aria-label="FitPlan home"><span class="brand-mark">F</span><span>FitPlan</span></a>
+    <p class="topbar-note">Your training, made easier</p>
+    <div id="account-actions" class="account-actions" hidden><span id="welcome-name"></span><button id="logout-button" class="button button-quiet" type="button">Log out</button></div>
+  </header>
+  <main class="page-shell">
+    <section id="auth-section" class="auth-layout" aria-labelledby="auth-title">
+      <div class="hero-copy"><p class="eyebrow">PERSONAL FITNESS PLANNER</p><h1>Make every workout count.</h1><p>Build a weekly routine, keep exercise guidance close and see your progress over time.</p><ul><li>Plan a week that fits your schedule</li><li>Log completed sessions in seconds</li><li>See your consistency improve</li></ul></div>
+      <div class="panel auth-panel"><p class="eyebrow">ON-DEVICE DEMO</p><h2 id="auth-title">Welcome to FitPlan</h2><p class="muted">Create a local demo account or sign in on this device.</p><div class="mode-switch"><button id="show-login" class="mode-button active" type="button">Log in</button><button id="show-register" class="mode-button" type="button">Create account</button></div>
+        <form id="auth-form"><label id="auth-name-wrap" hidden for="auth-name">Display name</label><input id="auth-name" name="displayName" autocomplete="nickname" placeholder="Your name" hidden><label for="auth-username">Username</label><input id="auth-username" name="username" autocomplete="username" required minlength="3" placeholder="Choose a username"><label for="auth-password">Password</label><input id="auth-password" name="password" type="password" autocomplete="current-password" required minlength="8" placeholder="At least 8 characters"><button id="auth-submit" class="button button-primary full-width" type="submit">Log in</button><p id="auth-status" class="form-status" role="status" aria-live="polite"></p></form>
+        <p class="small-note">Demo data stays in this browser. Use fictional details only. This is not a production account service.</p>
       </div>
-      <p id="push-status" class="status" role="status" aria-live="polite">Push server not connected.</p>
-      <p class="small-note">The test server template stores subscriptions in memory only; they are cleared when it restarts. Never enter real workout or health information.</p>
     </section>
 
-    <aside class="note"><strong>Important:</strong> Background delivery requires a running HTTPS push server and a Home Screen app with notification permission enabled.</aside>
-    <footer>Test only · No health advice · No workout data collection</footer>
+    <section id="app-section" hidden>
+      <nav class="main-nav" aria-label="Main navigation">
+        <button class="nav-button active" data-view="dashboard" type="button">Overview</button><button class="nav-button" data-view="plan" type="button">Weekly plan</button><button class="nav-button" data-view="library" type="button">Exercise library</button><button class="nav-button" data-view="log" type="button">Log workout</button><button class="nav-button" data-view="goals" type="button">Goals & reminders</button><button class="nav-button" data-view="profile" type="button">Profile</button>
+      </nav>
+      <section id="view-dashboard" class="app-view" aria-labelledby="dashboard-title"><div class="section-heading"><div><p class="eyebrow">YOUR WEEK AT A GLANCE</p><h1 id="dashboard-title">Overview</h1></div><span id="today-label" class="today-label"></span></div><div class="stat-grid"><article class="stat-card"><span class="stat-label">Workouts this week</span><strong id="weekly-count">0</strong><span class="stat-foot">completed sessions</span></article><article class="stat-card"><span class="stat-label">Weekly goal</span><strong id="goal-count">0 / 3</strong><span id="goal-foot" class="stat-foot">sessions completed</span></article><article class="stat-card"><span class="stat-label">Planned sessions</span><strong id="planned-count">0</strong><span class="stat-foot">in your weekly plan</span></article></div><div class="content-grid"><article class="panel"><div class="panel-heading"><div><p class="eyebrow">KEEP YOUR MOMENTUM</p><h2>Next planned workout</h2></div><button class="text-button" data-go="plan" type="button">Edit plan</button></div><div id="next-workout" class="empty-state">Add a session to your weekly plan to see it here.</div></article><article class="panel"><div class="panel-heading"><div><p class="eyebrow">YOUR RECENT ACTIVITY</p><h2>Progress</h2></div><button class="text-button" data-go="log" type="button">Log a workout</button></div><canvas id="progress-chart" height="180" aria-label="Bar chart of workouts completed over the last seven days"></canvas><p id="chart-caption" class="small-note">Your last seven days will appear here.</p></article></div></section>
+
+      <section id="view-plan" class="app-view" hidden aria-labelledby="plan-title"><div class="section-heading"><div><p class="eyebrow">MAKE IT YOURS</p><h1 id="plan-title">Weekly plan</h1><p class="muted">Choose an exercise, set a day and add the details that matter.</p></div></div><div class="content-grid plan-grid"><form id="plan-form" class="panel form-panel"><h2 id="plan-form-title">Add a session</h2><input id="plan-id" type="hidden"><label for="plan-day">Day</label><select id="plan-day" required><option value="">Choose a day</option><option>Monday</option><option>Tuesday</option><option>Wednesday</option><option>Thursday</option><option>Friday</option><option>Saturday</option><option>Sunday</option></select><label for="plan-exercise">Exercise</label><select id="plan-exercise" required></select><div class="field-row"><div><label for="plan-sets">Sets</label><input id="plan-sets" type="number" min="1" max="20" value="3"></div><div><label for="plan-reps">Repetitions</label><input id="plan-reps" type="number" min="1" max="100" value="10"></div></div><div class="field-row"><div><label for="plan-duration">Duration (minutes)</label><input id="plan-duration" type="number" min="1" max="300" value="30" required></div><div><label for="plan-time">Start time</label><input id="plan-time" type="time" value="18:00"></div></div><div class="button-row"><button class="button button-primary" type="submit">Save session</button><button id="cancel-plan-edit" class="button button-quiet" type="button" hidden>Cancel edit</button></div><p id="plan-status" class="form-status" role="status" aria-live="polite"></p></form><article class="panel"><div class="panel-heading"><div><p class="eyebrow">YOUR ROUTINE</p><h2>Sessions this week</h2></div><span id="plan-total" class="pill">0 sessions</span></div><div id="plan-list" class="item-list"></div></article></div></section>
+
+      <section id="view-library" class="app-view" hidden aria-labelledby="library-title"><div class="section-heading"><div><p class="eyebrow">LEARN THE MOVEMENT</p><h1 id="library-title">Exercise library</h1><p class="muted">Clear written guidance for your next session.</p></div><span id="exercise-total" class="pill"></span></div><label class="search-label" for="exercise-search">Search exercises</label><input id="exercise-search" class="search-input" type="search" placeholder="Try “squat” or “beginner”"><div id="exercise-list" class="exercise-grid"></div></section>
+
+      <section id="view-log" class="app-view" hidden aria-labelledby="log-title"><div class="section-heading"><div><p class="eyebrow">RECOGNISE YOUR EFFORT</p><h1 id="log-title">Log a workout</h1><p class="muted">Record completed training and build a useful progress history.</p></div></div><div class="content-grid"><form id="log-form" class="panel form-panel"><label for="log-date">Date</label><input id="log-date" type="date" required><label for="log-plan">Planned session</label><select id="log-plan"></select><label for="log-duration">Duration completed (minutes)</label><input id="log-duration" type="number" min="1" max="500" required placeholder="e.g. 35"><label for="log-notes">Notes (optional)</label><textarea id="log-notes" rows="3" maxlength="300" placeholder="How did it go?"></textarea><button class="button button-primary" type="submit">Save workout</button><p id="log-status" class="form-status" role="status" aria-live="polite"></p></form><article class="panel"><div class="panel-heading"><div><p class="eyebrow">TRAINING HISTORY</p><h2>Recent sessions</h2></div><span id="log-total" class="pill">0</span></div><div id="log-list" class="item-list"></div></article></div></section>
+
+      <section id="view-goals" class="app-view" hidden aria-labelledby="goals-title"><div class="section-heading"><div><p class="eyebrow">SMALL STEPS, STEADY PROGRESS</p><h1 id="goals-title">Goals & reminders</h1><p class="muted">Choose a weekly target and set a nudge for your next session.</p></div></div><div class="content-grid"><form id="goal-form" class="panel form-panel"><h2>Weekly fitness goal</h2><label for="goal-target">Target workouts per week</label><input id="goal-target" type="number" min="1" max="14" value="3" required><button class="button button-primary" type="submit">Save goal</button><p id="goal-status" class="form-status" role="status" aria-live="polite"></p><div id="goal-progress" class="goal-progress"></div></form><div class="panel"><form id="reminder-form" class="form-panel"><h2>Workout reminder</h2><label for="reminder-date">Date and time</label><input id="reminder-date" type="datetime-local" required><label for="reminder-message">Reminder message</label><input id="reminder-message" maxlength="100" value="Time for your planned workout!" required><button class="button button-primary" type="submit">Schedule reminder</button><button id="permission-button" class="button button-secondary" type="button">Enable notifications</button><p id="reminder-status" class="form-status" role="status" aria-live="polite">Reminder delivery depends on browser and device support.</p></form><div id="reminder-list" class="item-list compact-list"></div></div></div><details class="panel push-panel"><summary>Advanced: test Web Push server</summary><p class="muted">Optional delivery test. Enter the HTTPS address of your separately hosted test server and its private token. The token is used only for this page session.</p><label for="server-url">Push server URL</label><input id="server-url" type="url" inputmode="url" placeholder="https://your-test-server.example"><label for="test-token">Private test token</label><input id="test-token" type="password" autocomplete="off" placeholder="Enter the server's PUSH_TEST_TOKEN"><div class="button-row"><button id="subscribe-button" class="button button-secondary" type="button">Subscribe this device</button><button id="send-test-button" class="button button-quiet" type="button">Send test push</button></div><p id="push-status" class="form-status" role="status" aria-live="polite">Push server not connected.</p></details></section>
+
+      <section id="view-profile" class="app-view" hidden aria-labelledby="profile-title"><div class="section-heading"><div><p class="eyebrow">YOUR DETAILS</p><h1 id="profile-title">Profile</h1><p class="muted">Use fictional information in this public prototype.</p></div></div><form id="profile-form" class="panel form-panel profile-form"><label for="profile-name">Display name</label><input id="profile-name" required maxlength="60"><div class="field-row"><div><label for="profile-age">Age (optional)</label><input id="profile-age" type="number" min="13" max="120"></div><div><label for="profile-height">Height in cm (optional)</label><input id="profile-height" type="number" min="80" max="250"></div><div><label for="profile-weight">Weight in kg (optional)</label><input id="profile-weight" type="number" min="25" max="400"></div></div><label for="profile-goal">Fitness goal</label><input id="profile-goal" maxlength="120" placeholder="e.g. Build a consistent routine"><div class="button-row"><button class="button button-primary" type="submit">Save profile</button><button id="reset-data" class="button button-danger" type="button">Delete my local demo data</button></div><p id="profile-status" class="form-status" role="status" aria-live="polite"></p><p class="small-note">Profile, plans and workout records are stored only in this browser. Clearing site data may remove them. Do not enter real health or body measurement data.</p></form></section>
+    </section>
   </main>
+  <footer class="site-footer">FitPlan prototype · Fictional data only · Not medical advice</footer>
   <script src="./app.js" defer></script>
 </body>
 </html>
