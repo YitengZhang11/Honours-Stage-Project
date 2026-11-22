@@ -89,6 +89,7 @@ function switchView(name) {
 function renderExerciseOptions() {
   byId("plan-exercise").innerHTML = exercises.map(ex => "<option value=\"" + esc(ex.id) + "\">" + esc(ex.name) + "</option>").join("");
   byId("log-plan").innerHTML = "<option value=\"\">Choose a planned session (optional)</option>" + db.plans.map(p => "<option value=\"" + esc(p.id) + "\">" + esc(p.day + " · " + p.exerciseName) + "</option>").join("");
+  byId("log-exercise").innerHTML = "<option value=\"\">Choose an exercise</option>" + exercises.map(ex => "<option value=\"" + esc(ex.id) + "\">" + esc(ex.name) + "</option>").join("");
 }
 function renderPlans() {
   const ordered = db.plans.slice().sort((a,b) => weekdays.indexOf(a.day)-weekdays.indexOf(b.day) || a.time.localeCompare(b.time));
@@ -107,14 +108,8 @@ function renderLibrary(filter) {
 function renderLogs() {
   const logs = db.logs.slice().sort((a,b) => b.date.localeCompare(a.date));
   byId("log-total").textContent = String(logs.length) + " logged";
-  byId("log-list").innerHTML = logs.length ? logs.map(log => "<article class=\"list-item\"><div><strong>" + esc(formatDate(log.date)) + " · " + esc(log.title) + "</strong><p>" + esc(log.duration) + " min" + (log.notes ? " · " + esc(log.notes) : "") + "</p></div><div class=\"item-actions\"><button class=\"text-button danger-text\" data-action=\"delete-log\" data-id=\"" + esc(log.id) + "\" type=\"button\">Delete</button></div></article>").join("") : "<p class=\"empty-state\">Your completed sessions will appear here.</p>";
-}
-function renderGoal() {
-  const done = currentWeekLogs().length; const target = Number(db.goal || 3); const percent = Math.min(100, Math.round(done/target*100));
-  byId("goal-count").textContent = done + " / " + target; byId("goal-foot").textContent = done >= target ? "Weekly target reached" : (target-done) + " more to reach your goal";
-  byId("goal-progress").innerHTML = "<p><strong>" + done + " of " + target + " sessions</strong> this week</p><div class=\"progress-track\" role=\"progressbar\" aria-valuemin=\"0\" aria-valuemax=\"" + target + "\" aria-valuenow=\"" + Math.min(done,target) + "\"><span style=\"width:" + percent + "%\"></span></div><p class=\"small-note\">" + percent + "% of this week's target</p>";
-}
-function drawChart() {
+  byId("log-list").innerHTML = logs.length ? logs.map(log => '<article class="list-item"><div><strong>' + esc(formatDate(log.date)) + " · " + esc(log.title) + "</strong><p>" + esc(log.duration) + " min" + (log.sets && log.reps ? " · " + esc(log.sets) + " × " + esc(log.reps) + " reps" : "") + (log.load !== "" && log.load != null ? " · " + esc(log.load) + " kg" : "") + (log.notes ? " · " + esc(log.notes) : "") + '</p></div><div class="item-actions"><button class="text-button" data-action="edit-log" data-id="' + esc(log.id) + '" type="button">Edit</button><button class="text-button danger-text" data-action="delete-log" data-id="' + esc(log.id) + '" type="button">Delete</button></div></article>').join("") : '<p class="empty-state">Your completed sessions will appear here.</p>';
+}function drawChart() {
   const canvas = byId("progress-chart"); if (!canvas) return; const rect = canvas.getBoundingClientRect(); if (!rect.width) return;
   const ratio = window.devicePixelRatio || 1; canvas.width = rect.width*ratio; canvas.height = 180*ratio; const ctx = canvas.getContext("2d"); ctx.scale(ratio,ratio);
   const days = []; const counts = []; const today = new Date();
@@ -135,13 +130,35 @@ function renderDashboard() {
 function renderAll() { renderPlans(); renderLibrary(byId("exercise-search").value); renderLogs(); renderReminders(); renderDashboard(); }
 function resetPlanForm() { byId("plan-form").reset(); byId("plan-id").value=""; byId("plan-form-title").textContent="Add a session"; byId("cancel-plan-edit").hidden=true; }
 function handlePlanSubmit(event) {
-  event.preventDefault(); const id=byId("plan-id").value; const ex=exercises.find(item=>item.id===byId("plan-exercise").value);
-  const item={id:id||crypto.randomUUID(),day:byId("plan-day").value,exerciseId:ex.id,exerciseName:ex.name,sets:Number(byId("plan-sets").value),reps:Number(byId("plan-reps").value),duration:Number(byId("plan-duration").value),time:byId("plan-time").value||"18:00"};
-  if(!item.day||!item.duration||!Number.isFinite(item.duration)){setStatus("plan-status","Please choose a day and enter a valid duration.","error");return;}
-  db.plans=db.plans.filter(p=>p.id!==item.id);db.plans.push(item);saveData();resetPlanForm();setStatus("plan-status","Session saved to your weekly plan.","success");renderAll();
+  event.preventDefault();
+  const id = byId("plan-id").value; const day = byId("plan-day").value; const exercise = exercises.find(item => item.id === byId("plan-exercise").value);
+  const sets = Number(byId("plan-sets").value); const reps = Number(byId("plan-reps").value); const duration = Number(byId("plan-duration").value);
+  if (!day || !exercise || !Number.isInteger(sets) || sets < 1 || sets > 20 || !Number.isInteger(reps) || reps < 1 || reps > 100 || !Number.isInteger(duration) || duration < 1 || duration > 300) { setStatus("plan-status", "Choose a day and exercise; use 1–20 sets, 1–100 repetitions and 1–300 minutes.", "error"); return; }
+  const item = {id:id || crypto.randomUUID(), day:day, exerciseId:exercise.id, exerciseName:exercise.name, sets:sets, reps:reps, duration:duration, time:byId("plan-time").value || "18:00"};
+  db.plans = db.plans.filter(p => p.id !== item.id); db.plans.push(item); saveData(); resetPlanForm(); setStatus("plan-status", "Session saved to your weekly plan.", "success"); renderAll();
+}function editPlan(id) { const p=db.plans.find(item=>item.id===id);if(!p)return;byId("plan-id").value=p.id;byId("plan-day").value=p.day;byId("plan-exercise").value=p.exerciseId;byId("plan-sets").value=p.sets;byId("plan-reps").value=p.reps;byId("plan-duration").value=p.duration;byId("plan-time").value=p.time;byId("plan-form-title").textContent="Edit session";byId("cancel-plan-edit").hidden=false;byId("plan-form").scrollIntoView({behavior:"smooth",block:"start"}); }
+function handleLogSubmit(event) {
+  event.preventDefault();
+  const id = byId("log-id").value;
+  const plan = db.plans.find(p => p.id === byId("log-plan").value);
+  const exercise = exercises.find(ex => ex.id === byId("log-exercise").value) || (plan ? exercises.find(ex => ex.id === plan.exerciseId) : null);
+  const setsRaw = byId("log-sets").value;
+  const repsRaw = byId("log-reps").value;
+  const loadRaw = byId("log-load").value;
+  const duration = Number(byId("log-duration").value);
+  if (!byId("log-date").value || !exercise || !Number.isFinite(duration) || duration < 1 || duration > 500) { setStatus("log-status", "Choose an exercise, date and a duration from 1 to 500 minutes.", "error"); return; }
+  if ((setsRaw && (!Number.isInteger(Number(setsRaw)) || Number(setsRaw) < 1 || Number(setsRaw) > 20)) || (repsRaw && (!Number.isInteger(Number(repsRaw)) || Number(repsRaw) < 1 || Number(repsRaw) > 100)) || (loadRaw && (!Number.isFinite(Number(loadRaw)) || Number(loadRaw) < 0 || Number(loadRaw) > 500))) { setStatus("log-status", "Check sets, repetitions and load values.", "error"); return; }
+  const log = { id: id || crypto.randomUUID(), date: byId("log-date").value, title: exercise.name, exerciseId: exercise.id, planId: plan ? plan.id : "", sets: setsRaw ? Number(setsRaw) : (plan ? plan.sets : ""), reps: repsRaw ? Number(repsRaw) : (plan ? plan.reps : ""), load: loadRaw ? Number(loadRaw) : "", duration: duration, notes: byId("log-notes").value.trim() };
+  if (id) db.logs = db.logs.map(existing => existing.id === id ? log : existing); else db.logs.push(log);
+  saveData(); resetLogForm(); setStatus("log-status", id ? "Workout record corrected on this device." : "Workout recorded on this device.", "success"); renderAll();
+}function resetLogForm() {
+  byId("log-form").reset(); byId("log-id").value = ""; byId("log-date").value = localDate(); byId("log-submit").textContent = "Save workout"; byId("cancel-log-edit").hidden = true;
 }
-function editPlan(id) { const p=db.plans.find(item=>item.id===id);if(!p)return;byId("plan-id").value=p.id;byId("plan-day").value=p.day;byId("plan-exercise").value=p.exerciseId;byId("plan-sets").value=p.sets;byId("plan-reps").value=p.reps;byId("plan-duration").value=p.duration;byId("plan-time").value=p.time;byId("plan-form-title").textContent="Edit session";byId("cancel-plan-edit").hidden=false;byId("plan-form").scrollIntoView({behavior:"smooth",block:"start"}); }
-function handleLogSubmit(event) { event.preventDefault();const plan=db.plans.find(p=>p.id===byId("log-plan").value);const log={id:crypto.randomUUID(),date:byId("log-date").value,title:plan?plan.exerciseName+" · "+plan.day:"Independent workout",planId:plan?plan.id:"",duration:Number(byId("log-duration").value),notes:byId("log-notes").value.trim()};if(!log.date||!log.duration){setStatus("log-status","Add a date and a valid duration.","error");return;}db.logs.push(log);saveData();byId("log-form").reset();byId("log-date").value=localDate();setStatus("log-status","Workout recorded. Your progress has been updated.","success");renderAll(); }
+function editLog(id) {
+  const log = db.logs.find(item => item.id === id); if (!log) return;
+  byId("log-id").value = log.id; byId("log-date").value = log.date; byId("log-plan").value = log.planId || ""; byId("log-exercise").value = log.exerciseId || ""; byId("log-sets").value = log.sets || ""; byId("log-reps").value = log.reps || ""; byId("log-load").value = log.load ?? ""; byId("log-duration").value = log.duration; byId("log-notes").value = log.notes || "";
+  byId("log-submit").textContent = "Update workout"; byId("cancel-log-edit").hidden = false; switchView("log"); byId("log-form").scrollIntoView({behavior:"smooth",block:"start"});
+}
 function handleProfileSubmit(event) {event.preventDefault();db.profile={name:byId("profile-name").value.trim(),age:byId("profile-age").value,height:byId("profile-height").value,weight:byId("profile-weight").value,goal:byId("profile-goal").value.trim()};saveData();byId("welcome-name").textContent=db.profile.name;setStatus("profile-status","Profile updated on this device.","success");}
 function handleGoalSubmit(event) {event.preventDefault();db.goal=Number(byId("goal-target").value);saveData();setStatus("goal-status","Weekly goal saved.","success");renderAll();}
 function scheduleLocalReminder(reminder) {
@@ -152,8 +169,7 @@ function scheduleLocalReminder(reminder) {
 }
 function handleReminderSubmit(event) {event.preventDefault();const when=new Date(byId("reminder-date").value);if(!Number.isFinite(when.getTime())||when<=new Date()){setStatus("reminder-status","Choose a future date and time.","error");return;}const reminder={id:crypto.randomUUID(),when:when.toISOString(),message:byId("reminder-message").value.trim(),fired:false};db.reminders.push(reminder);saveData();scheduleLocalReminder(reminder);byId("reminder-form").reset();byId("reminder-message").value="Time for your planned workout!";setStatus("reminder-status","Reminder saved. It can fire while this app is open; background delivery needs Web Push.","success");renderReminders();}
 function restoreReminderTimers(){db.reminders.forEach(reminder=>{if(!reminder.fired&&!reminder.cancelled&&new Date(reminder.when)>new Date())scheduleLocalReminder(reminder);});}
-function handleActions(event) {const button=event.target.closest("[data-action]");if(!button)return;const id=button.dataset.id;switch(button.dataset.action){case "edit-plan":editPlan(id);break;case "delete-plan":if(confirm("Delete this planned session?")){db.plans=db.plans.filter(p=>p.id!==id);saveData();renderAll();}break;case "delete-log":if(confirm("Delete this workout record?")){db.logs=db.logs.filter(log=>log.id!==id);saveData();renderAll();}break;case "cancel-reminder":if(confirm("Cancel this reminder?")){const timer=reminderTimers.get(id);if(timer)clearTimeout(timer);db.reminders=db.reminders.filter(r=>r.id!==id);saveData();renderReminders();}break;}}
-function setInitialDates(){byId("log-date").value=localDate();const future=new Date(Date.now()+3600000);future.setMinutes(0,0,0);future.setHours(future.getHours()+1);byId("reminder-date").value=[localDate(future),String(future.getHours()).padStart(2,"0"),String(future.getMinutes()).padStart(2,"0")].join("T");}
+function handleActions(event) {const button=event.target.closest("[data-action]");if(!button)return;const id=button.dataset.id;switch(button.dataset.action){case "edit-plan":editPlan(id);break;case "delete-plan":if(confirm("Delete this planned session? Existing workout records will remain.")){db.plans=db.plans.filter(p=>p.id!==id);saveData();renderAll();}break;case "edit-log":editLog(id);break;case "delete-log":if(confirm("Delete this workout record?")){db.logs=db.logs.filter(log=>log.id!==id);saveData();renderAll();}break;case "cancel-reminder":if(confirm("Cancel this reminder?")){const timer=reminderTimers.get(id);if(timer)clearTimeout(timer);db.reminders=db.reminders.filter(r=>r.id!==id);saveData();renderReminders();}break;}}function setInitialDates(){byId("log-date").value=localDate();const future=new Date(Date.now()+3600000);future.setMinutes(0,0,0);future.setHours(future.getHours()+1);byId("reminder-date").value=[localDate(future),String(future.getHours()).padStart(2,"0"),String(future.getMinutes()).padStart(2,"0")].join("T");}
 
 byId("show-login").addEventListener("click",()=>setAuthMode("login"));
 byId("show-register").addEventListener("click",()=>setAuthMode("register"));
@@ -163,7 +179,7 @@ document.querySelectorAll(".nav-button").forEach(button=>button.addEventListener
 document.querySelectorAll("[data-go]").forEach(button=>button.addEventListener("click",()=>switchView(button.dataset.go)));
 byId("plan-form").addEventListener("submit",handlePlanSubmit);byId("cancel-plan-edit").addEventListener("click",resetPlanForm);
 byId("exercise-search").addEventListener("input",event=>renderLibrary(event.target.value));
-byId("log-form").addEventListener("submit",handleLogSubmit);byId("profile-form").addEventListener("submit",handleProfileSubmit);byId("goal-form").addEventListener("submit",handleGoalSubmit);byId("reminder-form").addEventListener("submit",handleReminderSubmit);
+byId("log-form").addEventListener("submit",handleLogSubmit);byId("cancel-log-edit").addEventListener("click",resetLogForm);byId("log-plan").addEventListener("change",()=>{const plan=db.plans.find(p=>p.id===byId("log-plan").value);if(plan){byId("log-exercise").value=plan.exerciseId;byId("log-sets").value=plan.sets;byId("log-reps").value=plan.reps;}});byId("profile-form").addEventListener("submit",handleProfileSubmit);byId("goal-form").addEventListener("submit",handleGoalSubmit);byId("reminder-form").addEventListener("submit",handleReminderSubmit);
 document.addEventListener("click",handleActions);window.addEventListener("resize",drawChart);
 byId("reset-data").addEventListener("click",()=>{if(confirm("Delete all local FitPlan demo data from this browser? This cannot be undone.")){for(const timer of reminderTimers.values())clearTimeout(timer);localStorage.removeItem(DATA_KEY);sessionStorage.removeItem(SESSION_KEY);db={account:null,profile:{},plans:[],logs:[],goal:3,reminders:[]};showAuth();setAuthMode("login");setStatus("auth-status","Local demo data deleted.","success");}});
 byId("permission-button").addEventListener("click",async()=>{if(!("Notification" in window)){setStatus("reminder-status","Notifications are not supported in this browser. Try the installed Home Screen app on iPhone.","error");return;}try{const permission=await Notification.requestPermission();setStatus("reminder-status","Notification permission: "+permission+". A permission prompt alone does not confirm reminder delivery.",permission==="granted"?"success":"error");}catch(error){setStatus("reminder-status","Could not request notification permission: "+error.message,"error");}});
